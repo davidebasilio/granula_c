@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 #include <unistd.h>
 #include <omp.h>
 
 #include <kmeans.h>
+#include <granula.h>
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 
@@ -39,9 +39,10 @@ void kmeans(size_t nclusters,
     partial_new_center_len[i] = calloc(nclusters, sizeof(size_t));
   }
 
-  printf("[Info] Entering kernel...\n");
-  struct timeval start_time;
-  gettimeofday(&start_time, NULL);
+  granula_op_t kmeans_op = {granula_get_uuid(), "kmeans", "Id.Unique", "Job", "Id.Unique"};
+  char buf[512];
+  granula_get_opinfo(buf, &kmeans_op, "StartTime", "??");
+  printf("%s\n", buf);
 
   #pragma omp parallel
   {
@@ -94,13 +95,8 @@ void kmeans(size_t nclusters,
     }
   }
 
-  struct timeval end_time;
-  gettimeofday(&end_time, NULL);
-  printf("[Info] Exiting kernel...\n");
-
-  struct timeval diff_time;
-  timersub(&end_time, &start_time, &diff_time);
-  printf("[Info] Runtime = %lf s\n", diff_time.tv_sec + diff_time.tv_usec * 1e-6);
+  granula_get_opinfo(buf, &kmeans_op, "EndTime", "??");
+  printf("%s\n", buf);
 
   #pragma omp parallel for
   for (size_t i = 0; i < nthreads; ++i) {
@@ -116,11 +112,11 @@ void kmeans(size_t nclusters,
 
 int main(int argc, char *argv[]) {
   const char *filename = NULL;
-  size_t nclusters = 8;
-  size_t nattributes = 4;
-  size_t nobjects = 256;
-  size_t niterations = 10;
-  size_t nthreads = 1;
+  size_t nclusters = 16;
+  size_t nattributes = 32;
+  size_t nobjects = 4096;
+  size_t niterations = 100;
+  size_t nthreads = 2;
   size_t nchunks = 1;
 
   int opt;
