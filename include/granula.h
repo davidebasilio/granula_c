@@ -28,7 +28,7 @@ static void granula_get_opinfo(
             const char *infoName, const char *infoValue) {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  long unsigned timestamp = ts.tv_sec * 1000000000 + ts.tv_nsec;
+  long unsigned timestamp = ts.tv_sec * 1000 + ts.tv_nsec / 1000000; // ms
   sprintf(buf, "GRANULA - OperationUuid: %lu "
                "ActorType: %s "
                "ActorId: %s "
